@@ -338,6 +338,25 @@ Fall transition time: time(slew_high_fall_thr) - time(slew_low_fall_thr)
 
 Rise transition time: time(slew_high_rise_thr) - time(slew_low_rise_thr)
  
+## Design Library Cell
+ 
+Users of OpenLANE can instantly modify environment variables. For instance, in the openLANE flow, we could do the following if we wanted to switch the pin location from equidistant to another style of placement:
+ 
+set ::env(FP_IO_MODE) 2
+ 
+## SPICE Deck creation & Simulation
+
+ A SPICE deck includes information about the following:
+
+1. Model description
+2. Netlist description
+3. Component connectivity
+4. Component values
+5. Capacitance load
+6. Nodes
+7. Simulation type and parameters
+8. Libraries included
+ 
  
  
  
