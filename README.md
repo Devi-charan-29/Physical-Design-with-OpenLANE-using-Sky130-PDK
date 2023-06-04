@@ -285,9 +285,151 @@ magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs
  
   ![Untitled 6 (1)](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/4aaa43f1-5c4b-4b67-8e73-c46014a6b3b2)
 
- ![9 standard cellplacements](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/532f6195-98b3-4d3d-9274-a46b12c2290a)
+![4 florr planning and showing what is what cell](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/3387077f-a87b-4a1c-82fc-86bde6ea6ceb)
 
 ### Placement
+ 
+ Placement is the following stage in the OpenLANE ASIC flow. The floorplan will then be populated with the synthesised netlist. Placement is done in two steps:
+
+Global Positioning: It determines the best position for every cell, even if it may not be legal or if some cells may overlap. Optimisation is carried out by cutting the parameter wire length in half.
+Detailed Placement: It moves cells after global placement to make them legal.
+
+#### Placement run on OpenLANE & view in Magic
+ The objective of placement is the convergence of overflow value. If overflow value reduces during the placement run it means that the design will converge and placement will be successful. The design can be viewed on magic within results/placement directory:
+The command used is : run_floorplan  the magic T used is 
+ 
+magic -T /home/aastha/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.placement.def &
+ 
+ ![8](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/ab80dc6a-197c-4552-9b34-d0560c1bbb39)
+ 
+ 
+ ![9 standard cellplacements](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/1f66d873-c68e-48b5-bec7-fb117eaaefd9)
+ 
+ ### Standard cell design flow
+ Standard cell design flow steps are:
+
+1. Inputs: PDKs, DRC & LVS rules, SPICE models, libraries, user-defined specifications
+2. Design steps: Circuit design, Layout design, Extraction of parasitics, Characterization (timing, noise, power)
+3. Outputs: CDL (circuit description language), LEF, GDSII, extracted SPICE netlist (.cir), timing, noise and power .lib files
+
+### Standard Cell Characterization Flow
+ A typical standard cell characterization flow includes the following steps:
+
+1. Read in the models and tech files
+2. Read extracted spice netlist
+3. Recognize behavior of the cell
+4. Read the subcircuits
+5. Attach power sources
+6. Apply stimulus to characterization setup
+7. Give necessary output capacitance loads
+8. Give necessary simulation commands
+ 
+### Timing Parameters
+ |slew_low_rise_thr | 20% value |
+ |slew_high_rise_thr | 80% value |
+ |slew_low_fall_thr | 20% value |
+ |slew_high_falle_thr | 20% value |
+ |in_rise_thr | 20% value |
+ |in_fall_thr | 20% value |
+ |out_rise_thr | 20% value |
+ |out_fall_thr | 20% value |
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
  
 
 
