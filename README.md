@@ -10,3 +10,15 @@ The foundries are where the chips are made, and their research gives us the PDKs
 Macro, such as the SoC depicted in the diagram, is fully digital logic that is built using a Hardware Description language.
 
 Even for embedded designs, communication with the foundry is crucial because a different process node for a SoC with the same functionality could result in signal integrity problems for a PCB because the rise time for different SoCs manufactured with different process nodes would be different. As a result, the already tested and functional PCB with the SoC manufactured with a 130nm process node would experience these issues.
+
+![Untitled](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/73e010e3-e5d4-4503-aea3-46605c252713)
+![Untitled 2](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/1334bc54-9cc6-4d5c-b8bf-4e7b5bd940b9)
+
+#Instruction Set Architecture (ISA)
+The interface between a computer system's hardware and software is defined by a collection of guidelines and specifications called the Instruction collection Architecture (ISA). It establishes how a processor interprets and carries out instructions given by software applications. As long as they follow the instructions and rules specified by the ISA, it enables software developers to design programmes without worrying about the specifics of the underlying hardware.
+
+Humans write a piece of code in a comprehensible language, which is then translated into Assembly code in accordance with an ISA. The assembly code is written in hexadecimal digits, which are then translated into binary numbers or the on/off of transistors laid out in a certain way that can run on the specific ISA for which the layout is intended. The bits enter the layout, and the output is produced.
+
+RISC-V ISA is used as an illustration. An HDL language is used to design the ISA's layout, and an RTL description follows. The RISC-V architecture specifications are implemented in the RTL description, and an IC that can execute human-written code is created by following the RTL to GDSII path.
+
+![Untitled 4](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/17a8be77-44eb-49f8-9e64-4ae03cb6310e)
