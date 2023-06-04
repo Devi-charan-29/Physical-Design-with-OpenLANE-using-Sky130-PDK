@@ -232,13 +232,10 @@ The synthesis was succesful
 
 We are interested in two parameters as of now, Utilisation Factor and Aspect Ratio. They are defined as follows:
 
-Utilisation Factor =  Area occupied by netlist
-                     __________________________
-                        Total area of core
+Utilisation Factor =  Area occupied by netlist/Total area of core
 
-Aspect Ratio =  Height
-               ________
-                Width
+Aspect Ratio =  Height/ Width
+              
 
 A Utilization Factor of 1 signifies 100% utilization leaving no space for extra cells such as buffer. However, practically, the Utilisation Factor is 0.5-0.6. Likewise, an Aspect ratio of 1 implies that the chip is square shaped. Any value other than 1 implies rectangular chip.
 
@@ -325,14 +322,154 @@ magic -T /home/aastha/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.
 8. Give necessary simulation commands
  
 ### Timing Parameters
- |slew_low_rise_thr | 20% value |
+ |slew_low_rise_thr  | 20% value |
+ |      :---:        |  :----:   |
  |slew_high_rise_thr | 80% value |
- |slew_low_fall_thr | 20% value |
- |slew_high_falle_thr | 20% value |
- |in_rise_thr | 20% value |
- |in_fall_thr | 20% value |
- |out_rise_thr | 20% value |
- |out_fall_thr | 20% value |
+ |slew_low_fall_thr  | 20% value |
+ |slew_high_falle_thr| 80% value |
+ |in_rise_thr        | 50% value |
+ |in_fall_thr        | 50% value |
+ |out_rise_thr       | 50% value |
+ |out_fall_thr       | 50% value |
+ 
+rise delay =  time(out_fall_thr) - time(in_rise_thr)
+
+Fall transition time: time(slew_high_fall_thr) - time(slew_low_fall_thr)
+
+Rise transition time: time(slew_high_rise_thr) - time(slew_low_rise_thr)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
  
  
  
