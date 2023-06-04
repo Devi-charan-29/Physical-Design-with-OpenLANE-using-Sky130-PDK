@@ -148,6 +148,13 @@ sky130A: contains sky130 pdk files
 
 ![Schematic-representation-of-a-CMOS-fabrication-process-with-SiGe-MBE](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/53f16890-7caf-4213-832b-4990ce75d5b6)
 
+# Labs
+## 1. Initiating Openlane, Design setup stage and synthesis
+
+1. Go to the OpenLane directory using “ cd ” command.
+2. Initiate Docker using :
+docker
+
 
 
 
