@@ -34,5 +34,127 @@ Small functions written in one of the languages, such as C, C++, Java, VB, etc.,
 # SOC Design and Openlane 
 
 ## Components of opensource digital ASIC design
+Three enablers or pieces are needed to create a digital Application Specific Integrated Circuit (ASIC): Process create Kit (PDK) data, Electronic Design Automation (EDA) tools, and Resistor Transistor Logic Intellectual Property (RTL IPs).
+![124005001-35a32a80-d9f6-11eb-8fcc-0917ad337699](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/a885ba9b-f9a8-4f32-9c05-3dbf48a2f444)
+ 1. Opensource RTL Designs: github, librecores, opencores
+ 2. Opensource EDA tools: QFlow, OpenROAD, OpenLANE
+ 3. Opensource PDK data: Google Skywater130 PDK
+### Simplified RTL2GDS Flow
+
+![124006238-a139c780-d9f7-11eb-8da9-6069b055fbe0](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/899ccdf7-663d-4103-bab6-0abfedb9674a)
+
+![131134578-5cd34ec9-a388-476b-aa4b-914c250d7ec9](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/466e980b-2eea-4012-8598-10c964860d52)
+
+1. Synthesis: RTL Converted to gate level netlist using standard cell libraries (SCL).
+2. Floor & Power Planning: Planning of silicon area to ensure robust power distribution.
+3. Placement: Placing cells on floorplan rows aligned with sites.
+4. Global Placement: for optimal position of cells.
+5. Detailed Placement: for legal positions.
+6. Routing: Valid patterns for wires.
+7. Signoff: Physical (DRC, LVS) and Timing verifications (STA).
+
+#### Openlane asic flow
+
+![185787620-8c999b89-2580-477d-aa20-1156d3e996c8](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/68a2dab8-a55b-46cb-9bb1-9574f7134cbc)
+
+![131135115-46148ff1-9489-48f6-a334-6702c25def59](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/e38635b0-bd7b-4301-8e07-1f85715a7bfe)
+
+From conception to product, the ASIC design flow is an iterative process that is not static for every design. The details of the flow may change depending on ECO’s, IP requirements, DFT insertion, and SDC constraints, however the base concepts still remain. The flow can be broken down into 11 steps:
+
+Architectural Design – A system engineer will provide the VLSI engineer with specifications for the system that are determined through physical constraints. The VLSI engineer will be required to design a circuit that meets these constraints at a microarchitecture modeling level.
+
+RTL Design/Behavioral Modeling – RTL design and behavioral modeling are performed with a hardware description language (HDL). EDA tools will use the HDL to perform mapping of higher-level components to the transistor level needed for physical implementation. HDL modeling is normally performed using either Verilog or VHDL. One of two design methods may be employed while creating the HDL of a microarchitecture:
+
+a. RTL Design – Stands for Register Transfer Level. It provides an abstraction of the digital circuit using:
+
+i. Combinational logic
+ii. Registers
+iii. Modules (IP’s or Soft Macros)
+b. Behavioral Modeling – Allows the microarchitecture modeling to be performed with behavior-based modeling in HDL. This method bridges the gap between C and HDL allowing HDL design to be performed
+
+RTL Verification - Behavioral verification of design
+
+DFT Insertion - Design-for-Test Circuit Insertion
+
+Logic Synthesis – Logic synthesis uses the RTL netlist to perform HDL technology mapping. The synthesis process is normally performed in two major steps:
+
+GTECH Mapping – Consists of mapping the HDL netlist to generic gates what are used to perform logical optimization based on AIGERs and other topologies created from the generic mapped netlist.
+
+Technology Mapping – Consists of mapping the post-optimized GTECH netlist to standard cells described in the PDK
+
+Standard Cells – Standard cells are fixed height and a multiple of unit size width. This width is an integer multiple of the SITE size or the PR boundary. Each standard cell comes with SPICE, HDL, liberty, layout (detailed and abstract) files used by different tools at different stages in the RTL2GDS flow.
+
+Post-Synthesis STA Analysis: Performs setup analysis on different path groups.
+
+Floorplanning – Goal is to plan the silicon area and create a robust power distribution network (PDN) to power each of the individual components of the synthesized netlist. In addition, macro placement and blockages must be defined before placement occurs to ensure a legalized GDS file. In power planning we create the ring which is connected to the pads which brings power around the edges of the chip. We also include power straps to bring power to the middle of the chip using higher metal layers which reduces IR drop and electro-migration problem.
+
+Placement – Place the standard cells on the floorplane rows, aligned with sites defined in the technology lef file. Placement is done in two steps: Global and Detailed. In Global placement tries to find optimal position for all cells but they may be overlapping and not aligned to rows, detailed placement takes the global placement and legalizes all of the placements trying to adhere to what the global placement wants.
+
+CTS – Clock tree synteshsis is used to create the clock distribution network that is used to deliver the clock to all sequential elements. The main goal is to create a network with minimal skew across the chip. H-trees are a common network topology that is used to achieve this goal.
+
+Routing – Implements the interconnect system between standard cells using the remaining available metal layers after CTS and PDN generation. The routing is performed on routing grids to ensure minimal DRC errors.
+
+The Skywater 130nm PDK uses 6 metal layers to perform CTS, PDN generation, and interconnect routing.
+
+Opensource EDA tools
+OpenLANE utilises a variety of opensource tools in the execution of the ASIC flow:
+
+Task	Tool/s
+RTL Synthesis & Technology Mapping	yosys, abc
+Floorplan & PDN	init_fp, ioPlacer, pdn and tapcell
+Placement	RePLace, Resizer, OpenPhySyn & OpenDP
+Static Timing Analysis	OpenSTA
+Clock Tree Synthesis	TritonCTS
+Routing	FastRoute and TritonRoute
+SPEF Extraction	SPEF-Extractor
+DRC Checks, GDSII Streaming out	Magic, Klayout
+LVS check	Netgen
+Circuit validity checker	CVC
+OpenLANE design stages
+Synthesis
+yosys - Performs RTL synthesis
+abc - Performs technology mapping
+OpenSTA - Performs static timing analysis on the resulting netlist to generate timing reports
+Floorplan and PDN
+init_fp - Defines the core area for the macro as well as the rows (used for placement) and the tracks (used for routing)
+ioplacer - Places the macro input and output ports
+pdn - Generates the power distribution network
+tapcell - Inserts welltap and decap cells in the floorplan
+Placement
+RePLace - Performs global placement
+Resizer - Performs optional optimizations on the design
+OpenDP - Perfroms detailed placement to legalize the globally placed components
+CTS
+TritonCTS - Synthesizes the clock distribution network (the clock tree)
+Routing
+FastRoute - Performs global routing to generate a guide file for the detailed router
+CU-GR - Another option for performing global routing.
+TritonRoute - Performs detailed routing
+SPEF-Extractor - Performs SPEF extraction
+GDSII Generation
+Magic - Streams out the final GDSII layout file from the routed def
+Klayout - Streams out the final GDSII layout file from the routed def as a back-up
+Checks
+Magic - Performs DRC Checks & Antenna Checks
+Klayout - Performs DRC Checks
+Netgen - Performs LVS Checks
+CVC - Performs Circuit Validity Checks
+OpenLANE Files
+The openLANE file structure looks something like this:
+
+skywater-pdk: contains PDK files provided by foundry
+open_pdks: contains scripts to setup pdks for opensource tools
+sky130A: contains sky130 pdk files
+
+![Schematic-representation-of-a-CMOS-fabrication-process-with-SiGe-MBE](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/53f16890-7caf-4213-832b-4990ce75d5b6)
+
+
+
+
+
+
+
+
+
 
 
