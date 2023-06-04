@@ -152,13 +152,143 @@ sky130A: contains sky130 pdk files
 ## 1. Initiating Openlane, Design setup stage and synthesis
 
 1. Go to the OpenLane directory using “ cd ” command.
-2. Initiate Docker using :
-docker
+2. Initiate Docker using : docker
+3. To strat the openlane : ./flow.tcl -interactive
+ 
+![Untitled 1](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/bb40f722-006c-495c-a2f3-8fc1f8a52f3f)
+
+4. For the packages to be installed we use : package require openlane 0.9
+
+The Picorv32a design is investigated in this case. The source files are already provided in the designs folder, and the design has already been adjusted for the best results. At least three files, src, config.tcl, and sky130A_sky130_fd_sc_hd_config.tcl, are present in the folder.
+
+The verilog files and SDC "Synopsys Design Constraint" file are both located in the src folder. Almost all Synthesis, PnR, and other tools support SDC, a common format for design constraints.
+
+The default settings made by openlane can be changed or overridden by editing the config.tcl file.
+
+sky130A_sky130_fd_sc_hd can be interpreted as (pdk variation)_(pdk)_(foundry)_(standard cell)_(high density). There can be other variations of PDK with acronyms: hdll - ms - ls - hs -
+sky130A_sky130_fd_sc_hd_config.tcl file contains another design tweaks that can be done to modify the design.
+
+The priority order is sky130A_sky130_fd_sc_hd_config.tcl > config.tcl > Default configurations.
+
+How to decide priority in:
+
+sky130A_sky130_fd_sc_hd_config.tcl
+sky130A_sky130_fd_sc_hdll_config.tcl
+sky130A_sky130_fd_sc_ms_config.tcl
+sky130A_sky130_fd_sc_ls_config.tcl
+sky130A_sky130_fd_sc_hs_config.tcl
+
+### Designing the setup stage
+We must set up a file system that is tailored to the flow. The design preparation stage creates the locations needed for the files to be fetched at each phase of the flow. The following command is used:   prep -design picorv32a
+
+The "prep" command is used to create the basic environment, input files, and configurations needed for the succeeding OpenLane flow phases.
+
+The "-design" option or flag is used in conjunction with the "prep" command to define the design that needs to be created. The name of the provided design in this instance is "picorv32a". It means that the environment will be particularly set up for the "picorv32a" design by using the "prep" command.
+
+In this phase, the LEF files at the cell level and the technology level are combined into a single file so that the openlane flow does not need to access several files to obtain data on cell geometry, layers, etc. Cell level LEF defines the physical and electrical characteristics of each individual standard cell inside a given library or cell set, whereas technology level LEF describes the general process technology features. One file called merged.lef is created by merging these two LEF files.
+
+Its initials stand for "Library Exchange Format." The physical and electrical characteristics of library cells or standard cells are described in LEF files. Within the electrical design automation (EDA) toolchain, these files provide crucial information for the physical design stages, such as location and routing.
+
+Cell Geometries: Specifies the dimensions of standard cells, such as their height, breadth, and layer.
+The pins and ports connected to each cell are referred to as pins and ports. For metal connections, these definitions provide details about name, direction (input or output), and layer.
+Describe the various layers that were employed in the design, such as the diffusion, polysilicon, and metal layers. The name, type, direction, and other attributes of each layer are defined, enabling the physical design tools to comprehend the layers that are accessible for routing and manufacturing.
+Information on the site, which is the area or grid that a cell is placed in, as well as its symmetry. To describe the symmetrical characteristics of the cells, they might contain symmetry information. Electrical Information: Capacitance is one of the electrical properties of cells.
+
+![picking up the files](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/e7fa7588-cf04-40c5-8bd9-1dedd064e9a0)
+
+
+The “ results ” folder will have files generated when different steps such as floor planning, CTS, synthesis etc are performed. Similiarly for reports folder.
+
+This file again has config.tcl shows what parameters have been modified. With every step performed there will be a config.tcl file generated, which will inform about what changes have been made.
+
+![folder is created](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/8c29352d-1796-42a7-8815-9fc3dbaf2ae4)
+
+We can see the results of all folders that are created
+
+![there are separate results for each of them](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/8b295aa3-2a92-43fd-9953-1aa836bc4a53)
+
+The merged.lef file can be accessed in the tmp folder, by using the command:  less merged.lef
+to exit we use q 
+
+## Synthesis 
+
+The yosys and ABC tools are utilized to convert RTL to gate level netlist. After the design setup is ready, To run the synthesis and generate gate-level netlist by command: run_synthesis
+
+In the report generated by synthesis, we are interested in chip module area and Flop ratio as of now:
+
+Flop ratio = no. of D-flip flops used/no. of cells used.
+
+here, flop ratio = 1613/14876 = 0.1084
+
+The statistics report of the synthesis is generated in the reports folder in the synthesis directory, and it is accessed using “less” command. The file is named “yosys_4.stat.rpt”
+
+![no of d flipflops](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/e21dba3f-b0e2-4d59-a817-67705a167b71)
+
+The synthesis was succesful
+
+![synthesis successful](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/c5383790-9c31-430e-86bd-f9324d8cb9a3)
+
+## 2. Floorplanning and placement
+
+We are interested in two parameters as of now, Utilisation Factor and Aspect Ratio. They are defined as follows:
+
+Utilisation Factor =  Area occupied by netlist
+                     __________________________
+                        Total area of core
+
+Aspect Ratio =  Height
+               ________
+                Width
+
+A Utilization Factor of 1 signifies 100% utilization leaving no space for extra cells such as buffer. However, practically, the Utilisation Factor is 0.5-0.6. Likewise, an Aspect ratio of 1 implies that the chip is square shaped. Any value other than 1 implies rectangular chip.
+
+Priority order of configuration files to be used by the Openlane flow:
+
+sky130A_sky130_fd_sc_hd_config.tcl
+
+conifg.tcl
+
+floorplan.tcl - System default variables.
+
+The variables we are interested in as of now:
+
+Floorplan environment variables or switches:
+
+FP_CORE_UTIL - floorplan core utilization
+FP_ASPECT_RATIO - floorplan aspect ratio
+FP_CORE_MARGIN - Core to die margin area
+FP_IO_MODE - defines pin configurations (1 = equidistant/0 = not equidistant)
+FP_CORE_VMETAL - vertical metal layer
+FP_CORE_HMETAL - horizontal metal layer
+Note: Vertical metal layer and Horizontal metal layer values will be 1 more than that specified in the files.
+
+After setting the desired variables, to run the picorv32a floorplan in openLANE:
+
+run_floorplan
+
+A.def file will have been produced in the results/floorplan directory following the floorplan run. The switches set in conifg.tcl and sky130A_sky130_fd_sc_hd_config.tcl will have overridden the system defaults, respectively. Using the magic tool, we can examine floorplan files.
+
+Decoupling capacitors: 
+Pre-placed cells must then be surrounded with decoupling capacitors (decaps). The resistances and capacitances associated with long wire lengths can cause the power supply voltage to drop significantly before reaching the logic circuits. This can lead to the signal value entering into the undefined region, outside the noise margin range. Decaps are huge capacitors charged to power supply voltage and placed close the logic circuit. Their role is to decouple the circuit from power supply by supplying the necessary amount of current to the circuit. They pervent crosstalk and enable local communication.
+
+
+![applying decoupling capacitors](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/46f74740-9544-4301-bce6-4c9d8b93d23f)
 
 
 
+After navigating to the results/floorplan directory, where the floorplan's.def file is generated, Magic is used to examine the floorplan. It is necessary to specify the location of the PDK's tech lef file, which can be found in the /openlane_working_dir/pdks/sky130A/libs.tech/magic folder. It's vital to note that the command also includes the name of the.tech file; otherwise, the tool won't be able to locate it. The command's syntax is as follows:
 
+magic -T <path to .tech file> read lef <path to .lef file> read def <path to .def file>
+ 
+ The Command is :
+magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.floorplan.def &
+ 
+  ![Untitled 6 (1)](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/4aaa43f1-5c4b-4b67-8e73-c46014a6b3b2)
 
+ ![9 standard cellplacements](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/532f6195-98b3-4d3d-9274-a46b12c2290a)
+
+### Placement
+ 
 
 
 
