@@ -401,47 +401,358 @@ extract all
 ext2spice cthresh 0 rethresh 0
 ext2spice
  
+  ![185789439-e7a512a3-e4d7-467f-9baf-0f03fcb990dd (1)](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/ba8f1244-132a-49a9-bced-916d148d9c2d)
+
+ 
+This generates the sky130_in.spice file. This SPICE deck is updated to include pshort.lib and nshort.lib which are the PMOS and NMOS libraries respectively. In addition, the minimum grid size of inverter is measured from the magic layout and incorporated into the deck as: .option scale=0.01u. The MOSFET definitions' model names have been modified to pshort.model.0 and nshort.model.0 for PMOS and NMOS, respectively.
+ 
+The commands are given 
+ 
+For simulation, ngspice is invoked in the terminal:
+
+ngspice sky130_inv.spice
+The output "y" is to be plotted with "time" and swept over the input "a":
+
+plot y vs time a
+
+![185789474-f6f9ab3c-adcc-48d9-a988-8b5ff5bc7f49](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/1f50f1ce-c384-4db1-a13f-4e31f8d3c66c)
+
+ The waveforms are as shown
+ 
+ 
+ ![185789476-9b49eb13-8a60-4166-a4f6-5acf58178c3b](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/351834c9-2258-447c-9c91-f2b82962aa30)
+ 
+ 
+ ![185789489-1cc709cb-395b-4db7-894c-e90cbe8553c5](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/d90257d5-46bc-40cc-b543-c8845e952ef4)
+
+The spikes in the output at switching points is due to low capacitance loads. This can be taken care of by editing the spice deck to increase the load capacitance value.
+ 
+### Standard cell characterization of inverter
+ 
+ Four timing parameters are used to characterize the inverter standard cell:
+
+1. Rise transition: Time taken for the output to rise from 20% of max value to 80% of max value
+2. Fall transition- Time taken for the output to fall from 80% of max value to 20% of max value
+3. Cell rise delay = time(50% output rise) - time(50% input fall)
+4. Cell fall delay = time(50% output fall) - time(50% input rise)
+5. The above timing parameters can be computed by noting down various values from the ngspice waveform.
+
+Rise transition = (2.23843 - 2.17935) = 59.08ps
+Fall transition = (4.09291 - 4.05004) = 42.87ps
+Cell rise delay = (2.20636 - 2.15) = 56.36ps
+Cell fall delay = (4.07479 - 4.05) = 24.79ps
+ 
+### Timing analysis and CTS
+ 
+According to tracks.info, ports must be located at the intersection of horizontal and vertical rails. The li1 layer contains the CMOS Inverter ports A and Y. Make sure they are at the point where the horizontal and vertical tracks meet. For the pitch and direction data, we access the tracks.info file:
+
+ To ensure that ports lie on the intersection point, the grid spacing in Magic (tkcon) must be changed to the li1 X and li1 Y values. Convergence of grid and tracks can be achieved using the following command:
+
+grid 0.46um 0.34um 0.23um 0.17um
+ 
+
+ ![185789878-18b441ec-af32-4f3f-b123-2908b864c6fb](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/5ee954d0-efab-4d7a-8a6b-d93c2a859bf5)
+
+#### Creating port definition
+ 
+Extraction of the LEF file for the cell comes next when the layout is completed. To help the placer and router tool, specific characteristics and definitions must be defined for the cell's pins. Ports are the macro's declared PINs, and in LEF files, a cell containing ports is written as a macro cell. Our goal is to extract LEF in a predetermined format from a configuration (in this case, a straightforward CMOS inverter). The first step is to define each port and assign the appropriate class and use characteristics to each port.
+ 
+The easiest way to define a port is through Magic Layout window and following are the steps:
+
+1. In Magic Layout window, first source the .mag file for the design (here inverter). Then Edit >> Text which opens up a dialogue box.
+ 
+ 
+ ![185789881-929deae7-d4eb-4842-9829-13a286be397a (2)](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/a694236a-6e78-4fe0-9c14-4e40aca25153)
+ 
+2. Create a box on the layer that will hold each layer that will become a port, then enter a label name and a sticky label containing the name of the layer that the port should be connected to. As shown in the image, make sure the Port enable option is selected and the default checkbox is not selected.
+ 
+ ![185789884-8da9ac43-e273-4c94-9f68-2edbf77fcded (1)](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/6aba9283-3c64-4cd0-af4e-6295a29e2ffb)
+ 
+In the above two figures, port A (input port) and port Y (output port) are taken from locali (local interconnect) layer. Also, the number in the textarea near enable checkbox defines the order in which the ports will be written in LEF file (0 being the first).
+
+3. For power and ground layers, the definition could be same or different than the signal layer. Here, ground and power connectivity are taken from metal1 (Notice the sticky label).
+ 
+
+ ![185789892-7cf30d76-b01b-4a42-8b05-0c2e8c772d04](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/78cbe141-b4f1-48a8-aecb-d90210da0d19)
+
+ 
+###  Standard generation of LEF
+ 
+ Before the CMOS Inverter standard cell LEF is extracted, the purpose of ports must be defined:
+
+Select port A in magic:
+
+port class input
+port use signal
+Select Y area
+
+port class output
+port class signal
+Select VPWR area
+
+port class inout
+port use power
+Select VGND area
+
+port class inout
+port use ground
+LEF extraction can be carried out in tkcon as follows:
+
+lef write
+ 
+ 
+ ![185790311-f5a68ba1-9e1d-47b1-ae47-d7a6f1a723d2 (1)](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/c9bc5008-51b4-4dc9-a1fc-cc50490d9b16)
+ 
+This generates sky130_vsdinv.lef file.
+
+Integrating custom cell in OpenLANE
+In order to include the new standard cell in the synthesis, copy the sky130_vsdinv.lef file to the designs/picorv32a/src directory
+Since abc maps the standard cell to a library abc there must be a library that defines the CMOS inverter. The sky130_fd_sc_hd_typical.lib file from vsdstdcelldesign/libs directory needs to be copied to the designs/picorv32a/src directory (Note: the slow and fast library files may also be copied).
+
+Next, config.tcl must be modified:
+
+set ::env(LIB_SYNTH) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__typical.lib"
+set ::env(LIB_SLOWEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__slow.lib"
+set ::env(LIB_FASTEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__fast.lib"
+set ::env(LIB_TYPICAL) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130/sky130_fd_sc_hd__typical.lib"
+
+set ::env(EXTRA_LEFS) [glob $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/src/*.lef]
+modified config.tcl file:
 
 
+ # User config
+set ::env(DESIGN_NAME) "picorv32a"
+
+# Change if needed
+set ::env(VERILOG_FILES) "./designs/picorv32a/src/picorv32a.v"
+set ::env(SDC_FILES) "./designs/picorv32a/src/picorv32a.sdc"
+
+
+# turn off clock
+set ::env(CLOCK_PERIOD) "5.000"
+set ::env(CLOCK_PORT) "clk"
+
+set ::env(CLOCK_MET) $::env(CLOCK_PORT) 
+
+
+set ::env(LIB_SYNTH) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib "
+set ::env(LIB_MIN) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__fast.lib"
+set ::env(LIB_MAX) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__slow.lib "
+set ::env(LIB_TYPICAL) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib"
+
+set ::env(EXTRA_LEFS) [glob $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/src/*.lef]
+
+set filename $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/$::env(PDK)_$::env(STD_CELL_LIBRARY)_config.tcl
+#set filename $::env(DESIGN_DIR)/$::env(PDK)_$::env(STD_CELL_LIBRARY)_config.tcl
+if { [file exists $filename] == 1 } {
+      source $filename
+}
+
+ In order to integrate the standard cell in the OpenLANE flow, invoke openLANE as usual and carry out following steps:
+
+prep -design picorv32a -tag RUN_2022.08.17_16.22.21 -overwrite
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+run_synthesis
+ 
+Next floorplan is run, followed by placement:
+
+run_floorplan
+run_placement
+To check the layout invoke magic from the results/placement directory:
+
+magic -T /home/devipriya/OpenLane/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.max.lef d
  
  
+ ![185794679-cd0de4df-30a6-46bd-b6dd-c73a727d85f4](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/f9396121-aa56-4f38-b977-eba7fcadd2aa)
+
+ 
+## After synthesis analysis
+ 
+ Using the OpenSTA tool, timing analysis is done outside of the openLANE flow. A new file called pre_sta.conf is made just for this. The STA analysis would require the use of this file. Outside of the openLANE flow, invoke OpenSTA as follows:
+
+pre_sta.conf for sta
+The study is with respect to ideal clocks and only setup time slack is taken into account because clock tree synthesis has not yet been done. The discrepancy between data arrival time and data necessary time is the slack value. It is required that the worst slack value be more than or equal to one. The steps that can be taken if a negative slack is acquired are as follows:
+
+1. Change the values for the synthesis approach, synthesis buffering, and synthesis sizing.
+2. Review the cells' maximum fanout and replace those with a high fanout
+ 
+ The file generated with the following commands:
+ 
+ VERSION 5.7 ;
+  NOWIREEXTENSIONATPIN ON ;
+  DIVIDERCHAR "/" ;
+  BUSBITCHARS "[]" ;
+MACRO sky130_vsdinv
+  CLASS CORE ;
+  FOREIGN sky130_vsdinv ;
+  ORIGIN 0.000 0.000 ;
+  SIZE 1.380 BY 2.720 ;
+  SITE unithd ;
+  PIN A
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    ANTENNAGATEAREA 0.165600 ;
+    PORT
+      LAYER li1 ;
+        RECT 0.060 1.180 0.510 1.690 ;
+    END
+  END A
+  PIN Y
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    ANTENNADIFFAREA 0.287800 ;
+    PORT
+      LAYER li1 ;
+        RECT 0.760 1.960 1.100 2.330 ;
+        RECT 0.880 1.690 1.050 1.960 ;
+        RECT 0.880 1.180 1.330 1.690 ;
+        RECT 0.880 0.760 1.050 1.180 ;
+        RECT 0.780 0.410 1.130 0.760 ;
+    END
+  END Y
+  PIN VPWR
+    DIRECTION INOUT ;
+    USE POWER ;
+    PORT
+      LAYER nwell ;
+        RECT -0.200 1.140 1.570 3.040 ;
+      LAYER li1 ;
+        RECT -0.200 2.580 1.430 2.900 ;
+        RECT 0.180 2.330 0.350 2.580 ;
+        RECT 0.100 1.970 0.440 2.330 ;
+      LAYER mcon ;
+        RECT 0.230 2.640 0.400 2.810 ;
+        RECT 1.000 2.650 1.170 2.820 ;
+      LAYER met1 ;
+        RECT -0.200 2.480 1.570 2.960 ;
+    END
+  END VPWR
+  PIN VGND
+    DIRECTION INOUT ;
+    USE GROUND ;
+    PORT
+      LAYER li1 ;
+        RECT 0.100 0.410 0.450 0.760 ;
+        RECT 0.150 0.210 0.380 0.410 ;
+        RECT 0.000 -0.150 1.460 0.210 ;
+      LAYER mcon ;
+        RECT 0.210 -0.090 0.380 0.080 ;
+        RECT 1.050 -0.090 1.220 0.080 ;
+      LAYER met1 ;
+        RECT -0.110 -0.240 1.570 0.240 ;
+    END
+  END VGND
+ 
+## Clock tree synthesis
+ 
+ The goal of creating a clock tree is to ensure that the clock input reaches every element and that the clock skew is zero. The H-tree approach is frequently used in CTS. If the slack was attempted to be decreased in a prior run, the netlist may have been altered via cell replacement procedures before performing a CTS run in the TritonCTS tool. As a result, the write_verilog command must be used to modify the verilog file. The synthesis, floorplan, and placement are then run once more. Use the command below to launch CTS:
+ run_cts
+ The CTS run adds clock buffers in therefore buffer delays come into picture and our analysis from here on deals with real clocks. Setup and hold time slacks may now be analysed in the post-CTS STA anlysis in OpenROAD within the openLANE flow:
+ 
+ openroad
+write_db pico_cts.db
+read_db pico_cts.db
+read_verilog /openLANE_flow/designs/picorv32a/runs/03-07_11-25/results/synthesis/picorv32a.synthesis_cts.v
+read_liberty $::env(LIB_SYNTH_COMPLETE)
+link_design picorv32a
+read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
+set_propagated_clock (all_clocks)
+report_checks -path_delay min_max -format full_clock_expanded -digits 4
+ 
+Slack 
+ 
+  ![185791682-94f98a0a-56ce-4409-9a66-796675ac5d39](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/0ca4cd1b-5b82-40b6-8ddd-bd7a9680a26e)
+
+ 
+ ## RTL to GDS
+ 
+ Power Distribution Network generation
+Unlike the general ASIC flow, Power Distribution Network generation is not a part of floorplan run in OpenLANE. PDN must be generated after CTS and post-CTS STA analyses:
+
+gen_pdn
+We can confirm the success of PDN by checking the current def environment variable: echo $::env(CURRENT_DEF)
  
  
+ ![185791987-6a53d110-667f-4243-a27f-056ed20e0154](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/bff36570-dc2a-4baa-a787-a5858c3ade16)
+
+ 
+1. gen_pdn - Generates the Power Distribution network
+2. The power distribution network has to take the design_cts.def as the input def file.
+3. This will create the grid and the straps for the Vdd and the ground. These are placed around the standard cells.
+4. The standard cells are designed such that it's height is multiples of the space between the Vdd and the ground rails. Here, the pitch is 2.72. Only if the above conditions are adhered it is possible to power the standard cells.
+5. The power to the chip, enters through the power pads. There is each for Vdd and Gnd
+6. From the pads, the power enters the rings, through the via
+7. The straps are connected to the ring. Vdd straps are connected to the Vdd ring and the Gnd Straps are connected to the Gnd ring. There are horizontal and the vertical straps
+8. Now the power has to be supplied from the straps to the standard cells. The straps are connected to the rails of the standard cells
+9. If macros are present then the straps attach to the rings of the macros via the macro pads and the pdn for the macro is pre-done.
+10. There are definitions for the straps and the railss. In this design straps are at metal layer 4 and 5 and the standard cell rails are at the metal layer 1. Vias connect accross the layers as required.
+ 
+## Routing
+ 
+OpenLANE uses the TritonRoute tool for routing. There are 2 stages of routing:
+
+1. Global routing: Routing region is divided into rectangle grids which are represented as course 3D routes (Fastroute tool).
+2.  Detailed routing: Finer grids and routing guides used to implement physical wiring (TritonRoute tool).
+ 
+Features of TritonRoute:
+
+Honouring pre-processed route guides
+Assumes that each net satisfies inter guide connectivity
+Uses MILP based panel routing scheme
+Intra-layer parallel and inter-layer sequential routing framework
+Running routing step in TritonRoute as part of openLANE flow:
+
+run_routing
+run_routing - To start the routing
+The options for routing can be set in the config.tcl file.
+The optimisations in routing can also be done by specifying the routing strategy to use different version of TritonRoute Engine. There is a trade0ff between the optimised route and the runtime for routing.
+For the default setting picorv32a takes approximately 30 minutesaccording to the current version of TritonRoute.
+This routing stage must have the CURRENT_DEF set to pdn.def
+The two stages of routing are performed by the following engines:
+Global Route : Fast Route
+Detailed Route : Triton Route
+Fast Route generates the routing guides, whereas Triton Route uses the Global Route and then completes the routing with some strategies and optimisations for finding the best possible path connect the pins.
+ 
+##GDSII
+ 
+ GDS Stands for Graphic Design Standard. This is the file that is sent to the foundry and is called as "tape-out".
+
+Fact- Earlier, the GDS files were written on magnetic tapes and sent out to the foundry and hence the name "tape-out"
+
+In openLane use the command magic
+
+The GDSII file is generated in the results/signoff/magic directory.
+
+No DRC errors are found.
+
+The layout pictures are shown below:
+ 
+ ![185795420-9af80389-7205-4a18-ac1b-0f95bd0f9d5c](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/3a3d8a87-2479-4a46-abe3-9ce0c34b8124)
+
+ 
+ ![185795427-f2a5b5c1-00ef-4c39-aaf5-81e04eb9cb50](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/f6a828d3-6805-4ab7-bd40-278d6acd7392)
+ 
+## LEF
+picorv32a.lef.mag file generated is shown below:
  
  
+ ![185795429-6fbb2ed0-e787-46d0-a4f7-198ae3bd8fd2](https://github.com/Devi-charan-29/Physical-Design-with-OpenLANE-using-Sky130-PDK/assets/95524221/2a99e128-a2f5-47a8-a55e-0d595dfabb83)
+
  
+ For post-routing STA: run_parasitics_sta
+
+## SPEF: Standard Parasitic Extraction Format
+
+1. Multi-corner STA will be done with the extracted SPEF.
+2. SPEF extraction and multi-corner STA will be done on all three corners (min, max, typical).
+3. The extracted SPEF can be located under runs/[date]/results/routing
+4. Timing ECO should be followed to reduce slack to desired level.
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+## Acknowledgements
+The OpenROAD Project
+Kunal Ghosh - Co-founder of VSD
+Nickson Jose - Workshop Instructor
  
  
  
